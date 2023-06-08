@@ -1,0 +1,6 @@
+numpy
+autograd
+autograd-minimize
+torch
+tensorflow
+matplotlib
