@@ -1,5 +1,14 @@
 jupyterlab
+jupyterlab-rise
+jupytext
 matplotlib
 numpy
-rise
+pandas
+#rise
+scikit-learn
 scipy
+seaborn
+#torch
+#torchaudio
+#torchvision
+tqdm

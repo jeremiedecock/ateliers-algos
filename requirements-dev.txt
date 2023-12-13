@@ -1,0 +1,8 @@
+-r requirements.txt
+aim
+#ipydatagrid
+ipython
+ipywidgets
+plotly
+tensorboard
+voila
