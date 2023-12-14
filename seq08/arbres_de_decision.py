@@ -20,15 +20,19 @@
 #
 # - [x] Jupytext
 # - [x] écrire un draft du notebook, y mettre les références bibliographiques, etc.
-# - [ ] regarder ce qu'a fait Sylvain -> en fait je n'ai pas accès à son notebook
+# - [x] regarder ce qu'a fait Sylvain -> https://colab.research.google.com/drive/1rfqdFgL50vd0DlRWJeG7S3FHjZbLwTxx#scrollTo=XF0KyZkytaLl
 # - [x] implémenter un exemple d'apprentissage et d'inférence avec sklearn, tester sur les datasets précédents
-# - [x] écrire des datasets (gpt)
-# - [ ] faire des illustarations bouillon (récup img google, scan, dessins faits avec la tablette graphique, dalle, etc.)
-# - [ ] lire les deux derniers livres
+# - [x] écrire des datasets
 # - [x] implémenter un exemple d'apprentissage et d'inférence d'ID3 from scratch + typer et documenter
+# - [ ] faire des illustarations bouillon (récup img google, scan, dessins faits avec la tablette graphique, dalle, etc.)
 # - [ ] compléter avec les slides de Ganascia
+# - [ ] vérifier l'implémentation
 # - [ ] préciser / nettoyer / compléter le notebook
+#
+# # TODO (facultatif)
+#
 # - [ ] ajouter régression
+# - [ ] lire les deux derniers livres
 # - [ ] ajouter du contenus mathématique, préciser la partie sur Shannon, etc. (c.f. livres + slides Ganascia + doc sklearn)
 # - [ ] ajouter brouillon algos / implémentations Python C4, CART, etc. ?
 # - [ ] nettoyer le notebook hors illustrations
@@ -40,13 +44,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from tqdm.notebook import tqdm
+from typing import Any, Dict, Optional, Tuple, List
 
 from IPython.display import Image   # To display graphviz images in the notebook
 
 # %% editable=true slideshow={"slide_type": "skip"}
 sns.set_context("talk")
 
-# %% [markdown] editable=true slideshow={"slide_type": "slide"}
+# %% [markdown] editable=true slideshow={"slide_type": "slide"} jp-MarkdownHeadingCollapsed=true
 # ## What are decision trees?
 #
 # - Non-parametric supervised learning methods
@@ -60,200 +65,83 @@ sns.set_context("talk")
 #
 # Tree Structure:
 # - Represents a hierarchy of decisions
-# - Each internal node denotes a test on an attribute
+# - Each internal node denotes a test on an *attribute*
 # - Each branch represents an outcome of the test
 # - Leaf nodes hold the final decision or prediction
 #
 # A tree can be seen as a piecewise constant approximation
 
-# %% [markdown] editable=true slideshow={"slide_type": ""}
-# ## Example (here for binary classification)
+# %% editable=true slideshow={"slide_type": "skip"}
+# !dot -Tsvg tree2.dot > figs/tree2.svg
+
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
+# ## Example (here for binary classification with categorical attributes)
+#
+# <img src="figs/tree2.svg" width="60%" />
+#
+# **Voc**:
+#
+# - *Attributes* (features or variables)
+# - Outcome
+# - Examples
+# - Labels (outputs, classes)
 
 # %% editable=true slideshow={"slide_type": "skip"}
-# !dot -Tpng tree1.dot > tree1.png
+#Image('tree1.png')
 
 # %% editable=true slideshow={"slide_type": "slide"}
-Image('tree1.png')
+pd.read_csv("dataset_golf_1.csv")
 
-# %% [markdown] editable=true slideshow={"slide_type": ""}
-# | Day | Outlook   | Humidity | Wind   | Play Tennis |
-# |-----|-----------|----------|--------|-------------|
-# | 1   | Sunny     | High     | Weak   | No          |
-# | 2   | Sunny     | High     | Strong | No          |
-# | 3   | Overcast  | High     | Weak   | Yes         |
-# | 4   | Rain      | High     | Weak   | Yes         |
-# | 5   | Rain      | Normal   | Weak   | Yes         |
-# | 6   | Rain      | Normal   | Strong | No          |
-# | 7   | Overcast  | Normal   | Strong | Yes         |
-# | 8   | Sunny     | High     | Weak   | No          |
-# | 9   | Sunny     | Normal   | Weak   | Yes         |
-# | 10  | Rain      | Normal   | Weak   | Yes         |
-# | 11  | Sunny     | Normal   | Strong | Yes         |
-# | 12  | Overcast  | High     | Strong | Yes         |
-# | 13  | Overcast  | Normal   | Weak   | Yes         |
-# | 14  | Rain      | High     | Strong | No          |
-#
-
-# %%
-pd.read_csv("dataset2.csv")
-
-
-# %% [markdown] editable=true slideshow={"slide_type": "slide"} jp-MarkdownHeadingCollapsed=true
-# ## Example (here for binary classification)
-#
-# ...
-#
-# <img src="figs/arbres_decision_dataset_restaurant.png" width="40%" />
-#
-# | Example | Alt | Bar | Fri | Hun | Pat  | Price | Rain | Res | Type    | Est  | WillWait |
-# |---------|-----|-----|-----|-----|------|-------|------|-----|---------|------|----------|
-# | x1      | Yes | No  | No  | Yes | Some | €€€   | No   | Yes | French  | 0-10 | Yes      |
-# | x2      | Yes | No  | No  | Yes | Full | €     | No   | No  | Thai    | 30-60| No       |
-# | x3      | No  | Yes | No  | No  | Some | €     | No   | No  | Burger  | 0-10 | Yes      |
-# | x4      | Yes | No  | Yes | Yes | Full | €     | Yes  | No  | Thai    | 10-30| Yes      |
-# | x5      | Yes | No  | Yes | No  | Full | €€€   | No   | Yes | French  | >60  | No       |
-# | x6      | No  | Yes | No  | Yes | Some | €€    | Yes  | Yes | Italian | 0-10 | Yes      |
-# | x7      | No  | Yes | No  | No  | None | €     | Yes  | No  | Burger  | 0-10 | No       |
-# | x8      | No  | No  | No  | Yes | Some | €€    | Yes  | Yes | Thai    | 0-10 | Yes      |
-# | x9      | No  | Yes | Yes | No  | Full | €     | Yes  | No  | Burger  | >60  | No       |
-# | x10     | Yes | Yes | Yes | Yes | Full | €€€   | No   | Yes | Italian | 10-30| No       |
-# | x11     | No  | No  | No  | No  | None | €     | No   | No  | Thai    | 0-10 | No       |
-# | x12     | Yes | Yes | Yes | Yes | Full | €     | No   | No  | Burger  | 30-60| Yes      |
-#
-#
-#
-# voc:
-# - *attribut* (= feature, variable)
-# - *exemple*
-# - *labels* (= sortie, classe)
-
-# %% [markdown] editable=true slideshow={"slide_type": "slide"}
-# ## Exemple d'arbre (attributs *nominaux*)
-#
-# ...
-#
-# voc:
-# - *attribut* (= feature, variable)
-# - *exemple*
-# - *labels* (= sortie, classe)
-
-# %% [markdown] editable=true slideshow={"slide_type": "slide"}
-# ## Représentation des sous-ensembles (attributs *nominaux*)
-#
-# <img src="figs/arbres_decision_representation_donnees_nominales.png" width="30%" />
-#
-# voc:
-# - *sous-ensemble*
-
-# %% [markdown] editable=true slideshow={"slide_type": "slide"}
-# ## Exemple d'arbre (attributs *binaires*)
-#
-# ...
-#
-# voc:
-# - *attribut* (= feature, variable)
-# - *exemple*
-# - *labels* (= sortie, classe)
-
-# %% [markdown] editable=true slideshow={"slide_type": "slide"}
-# ## Représentation des sous-ensembles (attributs *binaires*)
-#
-# ...
-#
-# voc:
-# - *sous-ensemble*
-
-# %% [markdown] editable=true slideshow={"slide_type": "slide"}
-# ## Exemple d'arbre (attributs *numériques*)
-#
-# ...
-#
-# voc:
-# - *attribut* (= feature, variable)
-# - *exemple*
-# - *labels* (= sortie, classe)
-
-# %% [markdown] editable=true slideshow={"slide_type": "slide"}
-# ## Représentation des sous-ensembles (attributs *numériques*)
-#
-# <img src="figs/arbres_decision_representation_donnees_numeriques.png" width="30%" />
-#
-# <img src="figs/arbres_decision_representation_donnees_numeriques_2.png" width="30%" />
-#
-# <img src="figs/sphx_glr_plot_tree_regression_001.png" width="30%" />
-#
-# voc:
-# - *sous-ensemble*
 
 # %% [markdown] editable=true slideshow={"slide_type": ""} jp-MarkdownHeadingCollapsed=true
-# ## Comment construire automatiquement un arbre de décision à partir d'un dataset ?
+# ## How to automatically build a decision tree from a dataset?
 #
-# **Qu'est-ce qu'on veut**
-# 1. un arbre qui prédit correctement
+# **What do we want**
+# 1. A tree that accurately predicts
 
 # %% [markdown] editable=true slideshow={"slide_type": ""} jp-MarkdownHeadingCollapsed=true
-# ## Il y a beaucoup d'abtres qui prédisent correctement les exemples d'un dataset
+# ## There are many trees that predict examples from a dataset with equivalent accuracy
 #
-# ...
 
 # %% [markdown] editable=true slideshow={"slide_type": ""}
-# ## Comment construire automatiquement un arbre de décision à partir d'un dataset ?
+# ## How to automatically build a decision tree from a dataset?
 #
-# **Qu'est-ce qu'on veut**
-# 1. un arbre qui prédit correctement
-# 2. *un abre le plus simple possible*
+# **What do we want**
+# 1. A tree that accurately predicts
+# 2. *A tree as simple as possible*
 
 # %% [markdown]
-# ## Algorithmes naïfs
+# ## Naive algorithms
 #
-# - brute force
+# - Brute force
 #
-# on pourrait procéder par brutforce en testant tous les arbres possibles pour un ensmble d'attributs donnés et en mesurant leur taille et leur exactitude mais n'"ezst pas faisable en pratique (préciser...)
-#
-# Exemle: avec 6 attributs binaires: $2^{2^6}$ arbres possibles (**à vérifier**)
-#
-# ...
+# We could proceed by brutforce, testing all possible trees for a given set of attributes and measuring their size and accuracy, but this is not feasible in practice: the number of possible trees grows exponentially with the number of attributes
 
 # %% [markdown]
-# ## Algorithmes naïfs
+# ## Naive algorithms
 #
-# - brute force
-# - algorithme évolutionniste
+# - Brute force
+# - Evolutionary algorithms
 #
-# On pourrait utiliser des algos évo mais là aussi on va vite être limité
+# We could use evolutionary algos, but here too we'll quickly be limited.
+
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
+# ## Greedy algorithms
 #
-# ...
+# In practice, greedy method is recursively used to build a decision tree from a dataset:
+#
+# 1. **Selection of the Best Attribute**: At each step in the algorithm, ID3 chooses the attribute that is most useful for classifying the data. This is done using a measure like Information Gain or Gain Ratio. The attribute with the highest Information Gain (or another chosen metric) is selected as the decision node.
+# 2. **Tree Construction**:
+#   - Start with all the training instances and a set of all the attributes.
+#   - Choose the best attribute using a greedy strategy (highest Information Gain, for example).
+#   - Make that attribute a decision node and divide the dataset into smaller subsets based upon the values of this attribute.
+# 4. **Recursive Splitting**:
+#   - For each subset of data (which is now smaller than the original set):
+#     - If all instances in the subset belong to the same class or there are no more attributes to be selected, then create a leaf node with the class label.
+#     - If there are mixed instances, then repeat the process: choose the best attribute for this subset of data and split it further. This is the recursive part, where the algorithm repeats the process of attribute selection and tree construction for each new subset.
+# 4. **Termination**: The recursion is terminated when either all instances at a node belong to the same class, there are no more attributes left to split upon, or the tree reaches a predefined depth limit.
 
 # %% [markdown] editable=true slideshow={"slide_type": "slide"} jp-MarkdownHeadingCollapsed=true
-# ## Algorithme glouton
-#
-# En pratique, on utilise des méthodes gloutones récursives qui vont ...
-#
-# A greedy algorithm is a mathematical process that looks for fast solutions to complex problems. A decision tree with hundreds of attributes and subsets is an excellent example of a complex problem that cannot be easily (or quickly) solved.
-#
-# In the context of a decision tree algorithm, a greedy algorithm selects nodes to build a tree by making the choice that seems best in the moment, and never looks back or reconsiders the choices that it has made. The goal of a greedy algorithm is to find the best solution to a problem one step at a time, which means at each step, it selects an option that improves its odds of finding the best solution.
-#
-# <img src="figs/arbres_decision_algo_commun.jpg" width="30%" />
-#
-#
-# Construction récursive d’un arbre de décision
-#
-# **Procédure** Construire-arbre (nœud X)
-#  <br>
-# **DÉBUT** <br>
-# **SI** Tous les points de X appartiennent à la même classe alors <br>
-#  $\quad$ Créer une feuille portant le nom de cette classe <br>
-# **SINON** <br>
-#  $\quad$ Choisir le meilleur attribut pour créer un nœud <br>
-#  $\quad$ Le test associé à ce nœud sépare $X$ en deux parties notées $X_g$ et $X_d$ <br>
-#  $\quad$ Construire-arbre($X_g$) <br>
-#  $\quad$ Construire-arbre($X_d$) <br>
-# **FIN SI** <br>
-#  <br>
-# **FIN** <br>
-#
-# ---
-#
 # Recursive construction of a decision tree
 #
 # **PROCEDURE** Build-tree (node X)
@@ -263,19 +151,17 @@ pd.read_csv("dataset2.csv")
 # **ELSE** <br>
 # $\quad$ Choose the best attribute to create a node <br>
 # $\quad$ The test associated with this node splits $X$ into two parts, denoted $X_g$ and $X_d$ <br>
-# $\quad$ Build-tree($X_g$) <br>
-# $\quad$ Build-tree($X_d$) <br>
-#
-#
+# $\quad$ *Build-tree*($X_g$) <br>
+# $\quad$ *Build-tree*($X_d$) <br>
 
 # %% [markdown]
-# ## Comment "choisir le meilleur attribut pour créer un noeud" ?
+# ## How do you "choose the best attribute to create a node"?
 #
 # - Entropy
 # - Information gain
 
 # %% [markdown]
-# ## Entropy
+# ## Entropy [TODO]
 #
 # Shannon... théorie de l'info...
 #
@@ -300,7 +186,7 @@ pd.read_csv("dataset2.csv")
 # Exercice: calculer l'entropie des sous-ensembles suivants : ...
 
 # %% [markdown]
-# ## Information gain
+# ## Information gain [TODO]
 #
 # Entropy = "how pure a subset is"
 # However it doesn't actually help the algo to choose the attribute
@@ -343,6 +229,9 @@ pd.read_csv("dataset2.csv")
 # %% [markdown]
 # ## Python implementation
 
+# %% [markdown]
+# ### Implement the entropy function
+
 # %%
 def entropy(target_col: np.ndarray) -> float:
     """
@@ -364,25 +253,37 @@ def entropy(target_col: np.ndarray) -> float:
     return entropy
 
 
+# %% [markdown]
+# ### Test the entropy function
+
 # %%
-df = pd.read_csv("dataset2.csv", dtype=str)
+df = pd.read_csv("dataset_golf_1.csv", dtype=str)
 df
 
-# %%
-df.play_golf.values
+# %% [markdown]
+# #### On all labels
 
 # %%
-entropy(df.play_golf.values)
+labels = df.label.values
+print(f"Entropy of subset {labels.tolist()} = {entropy(labels)}")
+
+# %% [markdown]
+# #### On a subset of labels
 
 # %%
-df.play_golf.values[:2]
+labels = df.label.values[:2]
+print(f"Entropy of subset {labels.tolist()} = {entropy(labels)}")
+
+# %% [markdown]
+# #### On another subset of labels
 
 # %%
-entropy(df.play_golf.values[:2])
+labels = df.label.values[:4]
+print(f"Entropy of subset {labels.tolist()} = {entropy(labels)}")
 
-# %%
-entropy(df.play_golf.values[:4])
 
+# %% [markdown]
+# ### Implement the info_gain function
 
 # %%
 def info_gain(data: pd.DataFrame, split_attribute_name: str, target_name: Optional[str] = "class") -> float:
@@ -417,6 +318,25 @@ def info_gain(data: pd.DataFrame, split_attribute_name: str, target_name: Option
 
     return information_gain
 
+
+# %% [markdown]
+# ### Test the info_gain function
+
+# %%
+info_gain(df, "outlook", target_name="label")
+
+# %%
+info_gain(df, "humidity", target_name="label")
+
+# %%
+info_gain(df, "wind", target_name="label")
+
+# %%
+info_gain(df, "temperature", target_name="label")
+
+
+# %% [markdown]
+# ### Implement the id3_algorithm function
 
 # %%
 def id3_algorithm(data: pd.DataFrame, original_data: pd.DataFrame, features: List[str], target_attribute_name: str = "class", parent_node_class: Optional[Any] = None) -> Any:
@@ -453,12 +373,10 @@ def id3_algorithm(data: pd.DataFrame, original_data: pd.DataFrame, features: Lis
     
     # If the feature space is empty, return the mode target feature value of the direct parent node --> Note that the direct parent node is that node which has called the current run of the ID3 algorithm and hence
     # the mode target feature value is stored in the parent_node_class variable.
-    
     elif len(features) == 0:
         return parent_node_class
     
     # If none of the above holds true, grow the tree!
-    
     else:
         # Set the default value for this node --> The mode target feature value of the current node
         parent_node_class = np.unique(data[target_attribute_name])[np.argmax(np.unique(data[target_attribute_name], return_counts=True)[1])]
@@ -489,6 +407,58 @@ def id3_algorithm(data: pd.DataFrame, original_data: pd.DataFrame, features: Lis
             
         return(tree)
 
+
+# %% [markdown]
+# ### Test the id3_algorithm function
+
+# %%
+# 'dataset' is a pandas DataFrame containing your dataset
+dataset = pd.read_csv("dataset_golf_1.csv")
+
+# The features (attributes) are the column names of the dataset (except the target feature)
+features = dataset.columns[:-1]
+
+# The target
+target_attribute_name = "label"
+
+# Train the tree
+decision_tree = id3_algorithm(dataset, dataset, features, target_attribute_name=target_attribute_name)
+
+# %%
+decision_tree
+
+# %%
+from graphviz import Digraph
+
+def add_nodes_edges(tree, parent_name, graph):
+    if isinstance(tree, dict):
+        for node, subtree in tree.items():
+            graph.node(node)
+            if parent_name is not None:
+                graph.edge(parent_name, node)
+            add_nodes_edges(subtree, node, graph)
+    else:
+        # Leaf node
+        graph.node(tree)
+        if parent_name is not None:
+            graph.edge(parent_name, tree)
+
+def tree_to_dot(tree):
+    graph = Digraph()
+    add_nodes_edges(tree, None, graph)
+    return graph
+
+
+# %%
+dot = tree_to_dot(decision_tree)
+dot.render('decision_tree.dot', format='svg')
+
+
+# %% [markdown] editable=true slideshow={"slide_type": "skip"}
+# <img src="decision_tree.dot.svg" width="30%" />
+
+# %% [markdown]
+# ### Implement the predict function
 
 # %%
 def predict(query: Dict[str, Any], tree: Dict[str, Any], default: Optional[int] = 1) -> Any:
@@ -524,19 +494,10 @@ def predict(query: Dict[str, Any], tree: Dict[str, Any], default: Optional[int] 
                 return result
 
 
+# %% [markdown]
+# ### Test the predict function
+
 # %%
-# Example: Training the ID3 algorithm
-# Let's assume that 'dataset' is a pandas DataFrame containing your data
-dataset = pd.read_csv("dataset2.csv")
-
-# The features are the column names of the dataset (except the target feature)
-features = dataset.columns[:-1]
-
-target_attribute_name = "play_golf"
-
-# Train the tree
-tree = id3_algorithm(dataset, dataset, features, target_attribute_name=target_attribute_name)
-
 # Predict a new instance by calling the 'predict' function
 query = dataset.iloc[0,:].to_dict()
 query.pop(target_attribute_name)
@@ -545,13 +506,13 @@ prediction = predict(query, tree)
 print(prediction)
 
 # %% [markdown] jp-MarkdownHeadingCollapsed=true
-# ## Les autres critères de sélection du meilleur attribut ~to split~
+# ## Other criteria for selecting the best attribute to split a node
 #
 # - Gini
-# - 
+# - ...
 
 # %% [markdown] jp-MarkdownHeadingCollapsed=true
-# ## Les autres critères de sélection
+# ## Other selection criteria
 # ### Gini Impurity
 #
 # $$
@@ -563,7 +524,7 @@ print(prediction)
 #
 # The lower the impurity the better.
 
-# %% [markdown]
+# %% [markdown] jp-MarkdownHeadingCollapsed=true
 # ## Decision Tree Algorithms Overview
 #
 # - **ID3 (Iterative Dichotomiser 3)**
@@ -593,14 +554,50 @@ print(prediction)
 # %% [markdown]
 # ## Potential problems with decision trees
 #
-# - overfitting
-# - 
+# - Overfitting
+# - ...
+
+# %%
+pd.read_csv("dataset_golf_1.csv")
+
+# %%
+pd.read_csv("dataset_golf_2.csv")
+
+# %%
+dataset = pd.read_csv("dataset_golf_1.csv")
+features = dataset.columns[:-1]
+target_attribute_name = "label"
+decision_tree = id3_algorithm(dataset, dataset, features, target_attribute_name=target_attribute_name)
+
+decision_tree
+
+# %%
+dot = tree_to_dot(decision_tree)
+dot.render('decision_tree1.dot', format='svg')
+
+# %% [markdown] editable=true slideshow={"slide_type": "skip"}
+# <img src="decision_tree1.dot.svg" width="30%" />
+
+# %%
+dataset = pd.read_csv("dataset_golf_2.csv")
+features = dataset.columns[:-1]
+target_attribute_name = "label"
+decision_tree = id3_algorithm(dataset, dataset, features, target_attribute_name=target_attribute_name)
+
+decision_tree
+
+# %%
+dot = tree_to_dot(decision_tree)
+dot.render('decision_tree2.dot', format='svg')
+
+# %% [markdown] editable=true slideshow={"slide_type": "skip"}
+# <img src="decision_tree2.dot.svg" width="30%" />
 
 # %% [markdown] editable=true slideshow={"slide_type": "slide"}
-# ## Généralisation
+# ## Generalization
 #
-# - statistical sifificance tests
-# - pruning (élagage)
+# - Statistical sifificance tests
+# - Pruning
 
 # %% [markdown] editable=true slideshow={"slide_type": ""}
 # ## Regression
@@ -668,12 +665,15 @@ clf = clf.fit(X, y)
 tree.plot_tree(clf);
 
 # %%
+clf.predict([[5.84, 3.05, 3.76, 1.20]])
+
+# %%
 import graphviz    # !pip install graphviz
 
 # %%
 dot_data = tree.export_graphviz(clf, out_file=None, 
-                                feature_names=iris.feature_names,  
-                                class_names=iris.target_names,  
+                                feature_names=dataset.feature_names,  
+                                class_names=dataset.target_names,  
                                 filled=True, rounded=True,  
                                 special_characters=True)  
 graph = graphviz.Source(dot_data)  
@@ -689,11 +689,10 @@ n_classes = 3
 plot_colors = "ryb"
 plot_step = 0.02
 
-
 for pairidx, pair in enumerate([[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]]):
     # We only take the two corresponding features
-    X = iris.data[:, pair]
-    y = iris.target
+    X = dataset.data[:, pair]
+    y = dataset.target
 
     # Train
     clf = DecisionTreeClassifier().fit(X, y)
@@ -707,8 +706,8 @@ for pairidx, pair in enumerate([[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]])
         cmap=plt.cm.RdYlBu,
         response_method="predict",
         ax=ax,
-        xlabel=iris.feature_names[pair[0]],
-        ylabel=iris.feature_names[pair[1]],
+        xlabel=dataset.feature_names[pair[0]],
+        ylabel=dataset.feature_names[pair[1]],
     )
 
     # Plot the training points
@@ -718,7 +717,7 @@ for pairidx, pair in enumerate([[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]])
             X[idx, 0],
             X[idx, 1],
             c=color,
-            label=iris.target_names[i],
+            label=dataset.target_names[i],
             cmap=plt.cm.RdYlBu,
             edgecolor="black",
             s=15,
@@ -727,9 +726,6 @@ for pairidx, pair in enumerate([[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]])
 plt.suptitle("Decision surface of decision trees trained on pairs of features")
 plt.legend(loc="lower right", borderpad=0, handletextpad=0);
 #_ = plt.axis("tight");
-
-# %%
-clf.predict([[5.84, 3.05, 3.76, 1.20]])
 
 # %% [markdown]
 # ### Regression

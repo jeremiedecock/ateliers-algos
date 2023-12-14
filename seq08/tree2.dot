@@ -1,0 +1,23 @@
+digraph DecisionTree {
+    node [shape=box];
+
+    a1 [label="Outlook"];
+    a2 [label="Humidity", shape=box];
+    a3 [label="Wind", shape=box];
+
+    c11 [label="Play Golf: Yes", shape=ellipse, style=filled, color=lightgreen];
+    c20 [label="Play Golf: No", shape=ellipse, style=filled, color=lightcoral];
+    c21 [label="Play Golf: Yes", shape=ellipse, style=filled, color=lightgreen];
+    c30 [label="Play Golf: No", shape=ellipse, style=filled, color=lightcoral];
+    c31 [label="Play Golf: Yes", shape=ellipse, style=filled, color=lightgreen];
+
+    a1 -> c11 [label="overcast"];
+    a1 -> a2 [label="sunny"];
+    a1 -> a3 [label="rain"];
+
+    a2 -> c20 [label="high"];
+    a2 -> c21 [label="normal"];
+
+    a3 -> c30 [label="strong"];
+    a3 -> c31 [label="weak"];
+}
