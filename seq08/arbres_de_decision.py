@@ -537,7 +537,7 @@ def predict(query: Dict[str, Any], tree: Dict[str, Any], default: Optional[int] 
 query = dataset.iloc[0,:].to_dict()
 query.pop(target_attribute_name)
 
-prediction = predict(query, tree)
+prediction = predict(query, decision_tree)
 print(prediction)
 
 # %% [markdown] jp-MarkdownHeadingCollapsed=true editable=true slideshow={"slide_type": "slide"}
@@ -634,11 +634,6 @@ dot.render('decision_tree2.dot', format='svg')
 #
 # - Statistical sifificance tests
 # - Pruning
-
-# %% [markdown] editable=true slideshow={"slide_type": "skip"}
-# ## Regression [TODO]
-#
-# <img src="figs/arbres_decision_regression_representation_donnees_numeriques.png" width="30%" />
 
 # %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Scikit-Learn implementation
