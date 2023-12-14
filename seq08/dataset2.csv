@@ -1,0 +1,15 @@
+outlook,temperature,humidity,wind,play_golf
+sunny,hot,high,weak,no
+sunny,hot,high,strong,no
+overcast,hot,high,weak,yes
+rain,warm,high,weak,yes
+rain,cold,normal,weak,yes
+rain,cold,normal,strong,no
+overcast,cold,normal,strong,yes
+sunny,warm,high,weak,no
+sunny,cold,normal,weak,yes
+rain,warm,normal,weak,yes
+sunny,warm,normal,strong,yes
+overcast,warm,high,strong,yes
+overcast,hot,normal,weak,yes
+rain,warm,high,strong,no
