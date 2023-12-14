@@ -70,7 +70,7 @@ sns.set_context("talk")
 pd.read_csv("dataset_golf_1.csv")
 
 
-# %% [markdown] editable=true slideshow={"slide_type": ""} jp-MarkdownHeadingCollapsed=true
+# %% [markdown] editable=true slideshow={"slide_type": ""}
 # ## How to automatically build a decision tree from a dataset?
 #
 # **What do we want**
@@ -204,11 +204,6 @@ pd.read_csv("dataset_golf_1.csv")
 # - Stopping when a tree reaches a maximum number of levels, or depth.
 # - Stopping when a minimum information-gain level is reached.
 # - Stopping when a subset contains less than a defined number of data points.
-
-# %% [markdown] editable=true slideshow={"slide_type": "slide"}
-# ## What if a dataset has two identical examples?
-#
-# ...
 
 # %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Python implementation
@@ -493,12 +488,6 @@ prediction = predict(query, tree)
 print(prediction)
 
 # %% [markdown] jp-MarkdownHeadingCollapsed=true editable=true slideshow={"slide_type": "slide"}
-# ## Other criteria for selecting the best attribute to split a node [TODO]
-#
-# - Gini
-# - ...
-
-# %% [markdown] jp-MarkdownHeadingCollapsed=true editable=true slideshow={"slide_type": "slide"}
 # ## Other selection criteria
 # ### Gini Impurity
 #
@@ -551,13 +540,13 @@ print(prediction)
 # - Overfitting
 # - ...
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 pd.read_csv("dataset_golf_1.csv")
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 pd.read_csv("dataset_golf_2.csv")
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 dataset = pd.read_csv("dataset_golf_1.csv")
 features = dataset.columns[:-1]
 target_attribute_name = "label"
@@ -565,14 +554,14 @@ decision_tree = id3_algorithm(dataset, dataset, features, target_attribute_name=
 
 decision_tree
 
-# %%
+# %% editable=true slideshow={"slide_type": "slide"}
 dot = tree_to_dot(decision_tree)
 dot.render('decision_tree1.dot', format='svg')
 
 # %% [markdown] editable=true slideshow={"slide_type": "skip"}
 # <img src="decision_tree1.dot.svg" width="30%" />
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 dataset = pd.read_csv("dataset_golf_2.csv")
 features = dataset.columns[:-1]
 target_attribute_name = "label"
@@ -580,14 +569,14 @@ decision_tree = id3_algorithm(dataset, dataset, features, target_attribute_name=
 
 decision_tree
 
-# %%
+# %% editable=true slideshow={"slide_type": "slide"}
 dot = tree_to_dot(decision_tree)
 dot.render('decision_tree2.dot', format='svg')
 
 # %% [markdown] editable=true slideshow={"slide_type": "skip"}
 # <img src="decision_tree2.dot.svg" width="30%" />
 
-# %% [markdown] editable=true slideshow={"slide_type": "slide"}
+# %% [markdown] editable=true slideshow={"slide_type": "slide"} jp-MarkdownHeadingCollapsed=true
 # ## Generalization
 #
 # - Statistical sifificance tests
@@ -636,33 +625,33 @@ dot.render('decision_tree2.dot', format='svg')
 #
 # (see [doc1](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_iris.html#sklearn.datasets.load_iris) and [doc2](https://scikit-learn.org/stable/datasets/toy_dataset.html#iris-dataset))
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 from sklearn.datasets import load_iris
 from sklearn import tree
 
 dataset = load_iris()
 X, y = dataset.data, dataset.target
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 pd.DataFrame(X).hist();
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 pd.DataFrame(y).hist();
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 clf = tree.DecisionTreeClassifier()
 clf = clf.fit(X, y)
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 tree.plot_tree(clf);
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 clf.predict([[5.84, 3.05, 3.76, 1.20]])
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 import graphviz    # !pip install graphviz
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 dot_data = tree.export_graphviz(clf, out_file=None, 
                                 feature_names=dataset.feature_names,  
                                 class_names=dataset.target_names,  
@@ -671,7 +660,7 @@ dot_data = tree.export_graphviz(clf, out_file=None,
 graph = graphviz.Source(dot_data)  
 graph 
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 from sklearn.datasets import load_iris
 from sklearn.inspection import DecisionBoundaryDisplay
 from sklearn.tree import DecisionTreeClassifier
