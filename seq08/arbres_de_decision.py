@@ -15,29 +15,6 @@
 # %% [markdown] editable=true slideshow={"slide_type": ""}
 # # Decision trees and random forests
 
-# %% [markdown] editable=true slideshow={"slide_type": "skip"}
-# ## TODO
-#
-# - [x] Jupytext
-# - [x] écrire un draft du notebook, y mettre les références bibliographiques, etc.
-# - [x] regarder ce qu'a fait Sylvain -> https://colab.research.google.com/drive/1rfqdFgL50vd0DlRWJeG7S3FHjZbLwTxx#scrollTo=XF0KyZkytaLl
-# - [x] implémenter un exemple d'apprentissage et d'inférence avec sklearn, tester sur les datasets précédents
-# - [x] écrire des datasets
-# - [x] implémenter un exemple d'apprentissage et d'inférence d'ID3 from scratch + typer et documenter
-# - [ ] faire des illustarations bouillon (récup img google, scan, dessins faits avec la tablette graphique, dalle, etc.)
-# - [ ] compléter avec les slides de Ganascia
-# - [ ] vérifier l'implémentation
-# - [ ] préciser / nettoyer / compléter le notebook
-#
-# # TODO (facultatif)
-#
-# - [ ] ajouter régression
-# - [ ] lire les deux derniers livres
-# - [ ] ajouter du contenus mathématique, préciser la partie sur Shannon, etc. (c.f. livres + slides Ganascia + doc sklearn)
-# - [ ] ajouter brouillon algos / implémentations Python C4, CART, etc. ?
-# - [ ] nettoyer le notebook hors illustrations
-# - [ ] mettre au propre les illustrations
-
 # %% editable=true slideshow={"slide_type": "skip"}
 import numpy as np
 import matplotlib.pyplot as plt
@@ -93,31 +70,30 @@ sns.set_context("talk")
 pd.read_csv("dataset_golf_1.csv")
 
 
-# %% [markdown] editable=true slideshow={"slide_type": ""} jp-MarkdownHeadingCollapsed=true
+# %% [markdown] editable=true slideshow={"slide_type": ""}
 # ## How to automatically build a decision tree from a dataset?
 #
 # **What do we want**
 # 1. A tree that accurately predicts
 
-# %% [markdown] editable=true slideshow={"slide_type": ""} jp-MarkdownHeadingCollapsed=true
-# ## There are many trees that predict examples from a dataset with equivalent accuracy
-#
+# %% [markdown] editable=true slideshow={"slide_type": "fragment"} jp-MarkdownHeadingCollapsed=true
+# There are many trees that predict examples from a dataset with equivalent accuracy
 
-# %% [markdown] editable=true slideshow={"slide_type": ""}
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## How to automatically build a decision tree from a dataset?
 #
 # **What do we want**
 # 1. A tree that accurately predicts
 # 2. *A tree as simple as possible*
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Naive algorithms
 #
 # - Brute force
 #
 # We could proceed by brutforce, testing all possible trees for a given set of attributes and measuring their size and accuracy, but this is not feasible in practice: the number of possible trees grows exponentially with the number of attributes
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Naive algorithms
 #
 # - Brute force
@@ -129,16 +105,23 @@ pd.read_csv("dataset_golf_1.csv")
 # ## Greedy algorithms
 #
 # In practice, greedy method is recursively used to build a decision tree from a dataset:
-#
+
+# %% [markdown] editable=true slideshow={"slide_type": "fragment"}
 # 1. **Selection of the Best Attribute**: At each step in the algorithm, ID3 chooses the attribute that is most useful for classifying the data. This is done using a measure like Information Gain or Gain Ratio. The attribute with the highest Information Gain (or another chosen metric) is selected as the decision node.
+
+# %% [markdown] editable=true slideshow={"slide_type": "fragment"}
 # 2. **Tree Construction**:
 #   - Start with all the training instances and a set of all the attributes.
 #   - Choose the best attribute using a greedy strategy (highest Information Gain, for example).
 #   - Make that attribute a decision node and divide the dataset into smaller subsets based upon the values of this attribute.
-# 4. **Recursive Splitting**:
+
+# %% [markdown] editable=true slideshow={"slide_type": "fragment"}
+# 3. **Recursive Splitting**:
 #   - For each subset of data (which is now smaller than the original set):
 #     - If all instances in the subset belong to the same class or there are no more attributes to be selected, then create a leaf node with the class label.
 #     - If there are mixed instances, then repeat the process: choose the best attribute for this subset of data and split it further. This is the recursive part, where the algorithm repeats the process of attribute selection and tree construction for each new subset.
+
+# %% [markdown] editable=true slideshow={"slide_type": "fragment"}
 # 4. **Termination**: The recursion is terminated when either all instances at a node belong to the same class, there are no more attributes left to split upon, or the tree reaches a predefined depth limit.
 
 # %% [markdown] editable=true slideshow={"slide_type": "slide"} jp-MarkdownHeadingCollapsed=true
@@ -154,13 +137,13 @@ pd.read_csv("dataset_golf_1.csv")
 # $\quad$ *Build-tree*($X_g$) <br>
 # $\quad$ *Build-tree*($X_d$) <br>
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## How do you "choose the best attribute to create a node"?
 #
 # - Entropy
 # - Information gain
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Entropy [TODO]
 #
 # Shannon... théorie de l'info...
@@ -173,7 +156,7 @@ pd.read_csv("dataset_golf_1.csv")
 #
 # In other words : moins nous avons d'entropie plus nous en savons (on cherche a minimiser l'entropie)
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": ""}
 # entropie : mesurée en bit
 #
 # entropie = $-p_{(+)} \log_2 p_{(+)} - p_{(-)} \log_2 p_{(-)}$
@@ -185,7 +168,7 @@ pd.read_csv("dataset_golf_1.csv")
 # %% [markdown]
 # Exercice: calculer l'entropie des sous-ensembles suivants : ...
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Information gain [TODO]
 #
 # Entropy = "how pure a subset is"
@@ -200,13 +183,13 @@ pd.read_csv("dataset_golf_1.csv")
 #
 # Ex: ...
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": ""}
 # Dérouler l'algo complètement
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": ""}
 # Ce qu'on a vu : ID3
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## How / when does the algorithm stop splitting ?
 #
 # There are three options for selecting when a decision tree algorithm stops splitting:
@@ -214,22 +197,18 @@ pd.read_csv("dataset_golf_1.csv")
 # 1. Allow the tree to split until every subset is pure. This means that, if necessary, the algorithm will keep splitting until each end node (leaf) subset contains 1 example and is therefore 100% pure. This might seem desirable, but it can lead to a problem known as overfitting, which we will cover in the next chapter.
 # 2. Stop the tree from splitting until every leaf subset is pure. This might seem like a good option, but it can quickly lead to a high error rate and poor performance because the tree is not robust enough.
 # 3. Adopt a stopping method. This is the when to stop splitting used by decision tree algorithms to determine when to stop splitting.
-#
+
+# %% [markdown] editable=true slideshow={"slide_type": "fragment"}
 # Depending on the type of tree you are using, there are multiple approaches to choose from. Some of these include:
 #
 # - Stopping when a tree reaches a maximum number of levels, or depth.
 # - Stopping when a minimum information-gain level is reached.
 # - Stopping when a subset contains less than a defined number of data points.
 
-# %% [markdown]
-# ## What if a dataset has two identical examples?
-#
-# ...
-
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Python implementation
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ### Implement the entropy function
 
 # %%
@@ -253,28 +232,28 @@ def entropy(target_col: np.ndarray) -> float:
     return entropy
 
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ### Test the entropy function
 
 # %%
 df = pd.read_csv("dataset_golf_1.csv", dtype=str)
 df
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "subslide"}
 # #### On all labels
 
 # %%
 labels = df.label.values
 print(f"Entropy of subset {labels.tolist()} = {entropy(labels)}")
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "subslide"}
 # #### On a subset of labels
 
 # %%
 labels = df.label.values[:2]
 print(f"Entropy of subset {labels.tolist()} = {entropy(labels)}")
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "subslide"}
 # #### On another subset of labels
 
 # %%
@@ -282,7 +261,7 @@ labels = df.label.values[:4]
 print(f"Entropy of subset {labels.tolist()} = {entropy(labels)}")
 
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ### Implement the info_gain function
 
 # %%
@@ -319,7 +298,7 @@ def info_gain(data: pd.DataFrame, split_attribute_name: str, target_name: Option
     return information_gain
 
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "subslide"}
 # ### Test the info_gain function
 
 # %%
@@ -335,7 +314,7 @@ info_gain(df, "wind", target_name="label")
 info_gain(df, "temperature", target_name="label")
 
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ### Implement the id3_algorithm function
 
 # %%
@@ -408,7 +387,7 @@ def id3_algorithm(data: pd.DataFrame, original_data: pd.DataFrame, features: Lis
         return(tree)
 
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ### Test the id3_algorithm function
 
 # %%
@@ -424,10 +403,13 @@ target_attribute_name = "label"
 # Train the tree
 decision_tree = id3_algorithm(dataset, dataset, features, target_attribute_name=target_attribute_name)
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 decision_tree
 
-# %%
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
+# ### Implement a function to plot the tree (WIP 😅)
+
+# %% editable=true slideshow={"slide_type": ""}
 from graphviz import Digraph
 
 def add_nodes_edges(tree, parent_name, graph):
@@ -457,7 +439,7 @@ dot.render('decision_tree.dot', format='svg')
 # %% [markdown] editable=true slideshow={"slide_type": "skip"}
 # <img src="decision_tree.dot.svg" width="30%" />
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ### Implement the predict function
 
 # %%
@@ -494,7 +476,7 @@ def predict(query: Dict[str, Any], tree: Dict[str, Any], default: Optional[int] 
                 return result
 
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ### Test the predict function
 
 # %%
@@ -505,13 +487,7 @@ query.pop(target_attribute_name)
 prediction = predict(query, tree)
 print(prediction)
 
-# %% [markdown] jp-MarkdownHeadingCollapsed=true
-# ## Other criteria for selecting the best attribute to split a node
-#
-# - Gini
-# - ...
-
-# %% [markdown] jp-MarkdownHeadingCollapsed=true
+# %% [markdown] jp-MarkdownHeadingCollapsed=true editable=true slideshow={"slide_type": "slide"}
 # ## Other selection criteria
 # ### Gini Impurity
 #
@@ -524,15 +500,18 @@ print(prediction)
 #
 # The lower the impurity the better.
 
-# %% [markdown] jp-MarkdownHeadingCollapsed=true
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Decision Tree Algorithms Overview
-#
+
+# %% [markdown] jp-MarkdownHeadingCollapsed=true editable=true slideshow={"slide_type": "slide"}
 # - **ID3 (Iterative Dichotomiser 3)**
 #   - **entropy** and **information gain**
 #   - Developed in 1979 by Ross Quinlan.
 #   - Creates a multiway tree.
 #   - Selects categorical features at each node for the largest information gain.
 #   - Trees grown to maximum size, then pruned for better generalization to new data.
+
+# %% [markdown] jp-MarkdownHeadingCollapsed=true editable=true slideshow={"slide_type": "slide"}
 # - **C4.5 (Successor to ID3)**
 #   - **entropy** and **gain ratio**
 #   - Developed in 1986 by Ross Quinlan.
@@ -540,10 +519,14 @@ print(prediction)
 #   - Converts decision trees into if-then rules.
 #   - Rules are ordered based on accuracy.
 #   - Prunes rules by evaluating accuracy improvements.
+
+# %% [markdown] jp-MarkdownHeadingCollapsed=true editable=true slideshow={"slide_type": "slide"}
 # - **C5.0 (Latest Version by Quinlan)**
 #   - Proprietary license.
 #   - More efficient in memory and rule size than C4.5.
 #   - Higher accuracy.
+
+# %% [markdown] jp-MarkdownHeadingCollapsed=true editable=true slideshow={"slide_type": "slide"}
 # - **CART (Classification and Regression Trees)**
 #   - **gini impurty** or **variance reduction**
 #   - Developed in 1984 by Brieman, Friedman, Ohlson and Stone
@@ -551,19 +534,19 @@ print(prediction)
 #   - Builds binary trees based on largest information gain.
 #   - Does not generate rule sets.
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Potential problems with decision trees
 #
 # - Overfitting
 # - ...
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 pd.read_csv("dataset_golf_1.csv")
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 pd.read_csv("dataset_golf_2.csv")
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 dataset = pd.read_csv("dataset_golf_1.csv")
 features = dataset.columns[:-1]
 target_attribute_name = "label"
@@ -571,14 +554,14 @@ decision_tree = id3_algorithm(dataset, dataset, features, target_attribute_name=
 
 decision_tree
 
-# %%
+# %% editable=true slideshow={"slide_type": "slide"}
 dot = tree_to_dot(decision_tree)
 dot.render('decision_tree1.dot', format='svg')
 
 # %% [markdown] editable=true slideshow={"slide_type": "skip"}
 # <img src="decision_tree1.dot.svg" width="30%" />
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 dataset = pd.read_csv("dataset_golf_2.csv")
 features = dataset.columns[:-1]
 target_attribute_name = "label"
@@ -586,27 +569,25 @@ decision_tree = id3_algorithm(dataset, dataset, features, target_attribute_name=
 
 decision_tree
 
-# %%
+# %% editable=true slideshow={"slide_type": "slide"}
 dot = tree_to_dot(decision_tree)
 dot.render('decision_tree2.dot', format='svg')
 
 # %% [markdown] editable=true slideshow={"slide_type": "skip"}
 # <img src="decision_tree2.dot.svg" width="30%" />
 
-# %% [markdown] editable=true slideshow={"slide_type": "slide"}
+# %% [markdown] editable=true slideshow={"slide_type": "slide"} jp-MarkdownHeadingCollapsed=true
 # ## Generalization
 #
 # - Statistical sifificance tests
 # - Pruning
 
-# %% [markdown] editable=true slideshow={"slide_type": ""}
-# ## Regression
-#
-# **TODO**
+# %% [markdown] editable=true slideshow={"slide_type": "skip"}
+# ## Regression [TODO]
 #
 # <img src="figs/arbres_decision_regression_representation_donnees_numeriques.png" width="30%" />
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Scikit-Learn implementation
 #
 # ### Models
@@ -620,14 +601,14 @@ dot.render('decision_tree2.dot', format='svg')
 #
 # See also: https://scikit-learn.org/stable/modules/tree.html
 
-# %% [markdown] jp-MarkdownHeadingCollapsed=true
+# %% [markdown] jp-MarkdownHeadingCollapsed=true editable=true slideshow={"slide_type": "slide"}
 # ### Warning
 #
 # The Scikit-Learn implementation does not support categorical variables for now!
 #
 # See: https://scikit-learn.org/stable/modules/tree.html
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ### Classification: Example with the Iris dataset
 #
 # - **Number of Instances**: 150 (50 in each of three classes)
@@ -644,33 +625,33 @@ dot.render('decision_tree2.dot', format='svg')
 #
 # (see [doc1](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_iris.html#sklearn.datasets.load_iris) and [doc2](https://scikit-learn.org/stable/datasets/toy_dataset.html#iris-dataset))
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 from sklearn.datasets import load_iris
 from sklearn import tree
 
 dataset = load_iris()
 X, y = dataset.data, dataset.target
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 pd.DataFrame(X).hist();
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 pd.DataFrame(y).hist();
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 clf = tree.DecisionTreeClassifier()
 clf = clf.fit(X, y)
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 tree.plot_tree(clf);
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 clf.predict([[5.84, 3.05, 3.76, 1.20]])
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 import graphviz    # !pip install graphviz
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 dot_data = tree.export_graphviz(clf, out_file=None, 
                                 feature_names=dataset.feature_names,  
                                 class_names=dataset.target_names,  
@@ -679,7 +660,7 @@ dot_data = tree.export_graphviz(clf, out_file=None,
 graph = graphviz.Source(dot_data)  
 graph 
 
-# %%
+# %% editable=true slideshow={"slide_type": "skip"}
 from sklearn.datasets import load_iris
 from sklearn.inspection import DecisionBoundaryDisplay
 from sklearn.tree import DecisionTreeClassifier
@@ -768,7 +749,7 @@ plt.title("Decision Tree Regression")
 plt.legend()
 plt.show()
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Advantages of Decision Trees
 #
 # - **Easy to Understand and Interpret**: Trees can be visualized, making them easy to understand and interpret, even for non-technical stakeholders.
@@ -778,7 +759,7 @@ plt.show()
 # - **Automatic Feature Selection**: Decision trees implicitly perform feature selection during training, which is beneficial in cases with a large number of features- Can Model Non-Linear Relationships: Effective at capturing non-linear relationships between features and labels.
 # - **Useful for Exploratory Analysis**: Can be used to identify the most influential variables in a dataset.
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Disadvantages of Decision Trees
 #
 # - **Overfitting**: Tend to overfit the data, especially if the tree is deep with many branches. This can be mitigated using techniques like pruning, setting a maximum depth, or minimum samples per leaf.
@@ -789,7 +770,7 @@ plt.show()
 # - **Greedy Algorithms**: Decision trees use a greedy approach which might not result in the globally optimal tree.
 # - **Difficulty in Capturing Complex Relationships**: They may struggle to capture more complex relationships without becoming overly complex themselves.
 
-# %% [markdown]
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Bibliography
 #
 # - R. Quinlan, "Learning efficient classification procedures", Machine Learning: an artificial intelligence approach, Michalski, Carbonell & Mitchell (eds.), Morgan Kaufmann, 1983, p. 463-482.
