@@ -15,6 +15,19 @@
 # %% [markdown] editable=true slideshow={"slide_type": ""}
 # # Decision trees and random forests
 
+# %% editable=true slideshow={"slide_type": ""}
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+from tqdm.notebook import tqdm
+from typing import Any, Dict, Optional, Tuple, List
+
+from IPython.display import Image
+
+# %% editable=true slideshow={"slide_type": ""}
+sns.set_context("talk")
+
 # %% editable=true slideshow={"slide_type": "skip"}
 import numpy as np
 import matplotlib.pyplot as plt
@@ -68,7 +81,6 @@ sns.set_context("talk")
 
 # %% editable=true slideshow={"slide_type": "slide"}
 pd.read_csv("dataset_golf_1.csv")
-
 
 # %% [markdown] editable=true slideshow={"slide_type": ""}
 # ## How to automatically build a decision tree from a dataset?
@@ -125,7 +137,7 @@ pd.read_csv("dataset_golf_1.csv")
 # 4. **Termination**: The recursion is terminated when either all instances at a node belong to the same class, there are no more attributes left to split upon, or the tree reaches a predefined depth limit.
 
 # %% [markdown] editable=true slideshow={"slide_type": "slide"} jp-MarkdownHeadingCollapsed=true
-# Recursive construction of a decision tree
+# Recursive construction of a (binary) decision tree
 #
 # **PROCEDURE** Build-tree (node X)
 # <br>
@@ -133,61 +145,102 @@ pd.read_csv("dataset_golf_1.csv")
 # $\quad$ Create a leaf bearing the name of this class <br>
 # **ELSE** <br>
 # $\quad$ Choose the best attribute to create a node <br>
-# $\quad$ The test associated with this node splits $X$ into two parts, denoted $X_g$ and $X_d$ <br>
-# $\quad$ *Build-tree*($X_g$) <br>
-# $\quad$ *Build-tree*($X_d$) <br>
+# $\quad$ The test associated with this node splits $X$ into two parts, denoted $X_l$ and $X_r$ <br>
+# $\quad$ *Build-tree*($X_l$) <br>
+# $\quad$ *Build-tree*($X_r$) <br>
 
 # %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## How do you "choose the best attribute to create a node"?
 #
-# - Entropy
-# - Information gain
+# We use 2 concepts for this:
+# - *Entropy*
+# - *Information gain*
 
 # %% [markdown] editable=true slideshow={"slide_type": "slide"}
-# ## Entropy [TODO]
+# ## Entropy
 #
-# Shannon... théorie de l'info...
+# The notion of entropy is borrowed from information theory (Shannon).
 #
-# Entropy = "how much info you are missing"
-#
-# e.g. on veut une adresse,
-# - France = ... -> there is a lot of info missing
-# - 92012 = ... -> less information mission -> lower entropy
-#
-# In other words : moins nous avons d'entropie plus nous en savons (on cherche a minimiser l'entropie)
-
-# %% [markdown] editable=true slideshow={"slide_type": ""}
-# entropie : mesurée en bit
-#
-# entropie = $-p_{(+)} \log_2 p_{(+)} - p_{(-)} \log_2 p_{(-)}$
-#
-# e.g.
-# - subset 1 = 0 bit
-# - subset 2 = 1 bit
-
-# %% [markdown]
-# Exercice: calculer l'entropie des sous-ensembles suivants : ...
+# Shannon, Claude Elwood. "A mathematical theory of communication." The Bell system technical journal 27, no. 3 (1948): 379-423. [PDF](https://cse.buffalo.edu/~hungngo/classes/2003/Markov_Chains/papers/p3-shannon.pdf)
 
 # %% [markdown] editable=true slideshow={"slide_type": "slide"}
-# ## Information gain [TODO]
-#
-# Entropy = "how pure a subset is"
-# However it doesn't actually help the algo to choose the attribute
-# (...)
-#
-# Information gain (..)
-#
-# information gain = entropie(parent) - weighted avg(entropie des sous ensembles)
-#
-# We want to maximize the information gain
-#
-# Ex: ...
+# Entropy is a measure of uncertainty or variability in data.
+# The higher the entropy, the more disordered and varied the information in the data.
+
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
+# In decision trees, entropy helps determine how to divide (or "split") the data so as to make the subsets as "pure" as possible.
+# In the context of classification, a "pure" subset would contain data of a single class or type.
 
 # %% [markdown] editable=true slideshow={"slide_type": ""}
-# Dérouler l'algo complètement
+# $$
+# \Large
+# \text{Entropy}(S) = -\sum_{i=1}^{n} p_i \log_2 p_i
+# $$
+#
+# Entropy is measured in bit.
+
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
+# ### Exercise
+#
+# Compute the entropy of the following subsets:
+
+# %% editable=true slideshow={"slide_type": ""}
+df = pd.read_csv("dataset_golf_1.csv", dtype=str)
+
+# %% editable=true slideshow={"slide_type": ""}
+df[:2]
 
 # %% [markdown] editable=true slideshow={"slide_type": ""}
-# Ce qu'on a vu : ID3
+# $$
+# \Large
+# \text{Entropy}(S_1) = - p_{\text{don't play}} \log_2 p_{\text{don't play}} - p_{\text{play}} \log_2 p_{\text{play}} = - \frac22 \log_2 \frac22 - \frac02 \log_2 \frac02 = 0 ~ \text{bit}
+# $$
+
+# %% editable=true slideshow={"slide_type": ""}
+df[:4]
+
+# %% [markdown] editable=true slideshow={"slide_type": ""}
+# $$
+# \Large
+# \text{Entropy}(S_2) = - p_{\text{don't play}} \log_2 p_{\text{don't play}} - p_{\text{play}} \log_2 p_{\text{play}} = - \frac24 \log_2 \frac24 - \frac24 \log_2 \frac24 = 1 ~ \text{bit}
+# $$
+
+# %% editable=true slideshow={"slide_type": ""}
+df[:5]
+
+
+# %% [markdown] editable=true slideshow={"slide_type": ""}
+# $$
+# \Large
+# \text{Entropy}(S_2) = - p_{\text{don't play}} \log_2 p_{\text{don't play}} - p_{\text{play}} \log_2 p_{\text{play}} = - \frac25 \log_2 \frac25 - \frac35 \log_2 \frac35 = 0.97 ~ \text{bit}
+# $$
+
+# %% [markdown] editable=true slideshow={"slide_type": ""}
+# See also: https://scikit-learn.org/stable/modules/tree.html#classification-criteria
+
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
+# ## Information gain
+#
+# Entropy tells us "how pure a subset is" but it doesn't actually tells us how to *choose* the attribute.
+#
+# We use a second metric for this: **information gain**.
+#
+# The information gain Gain(S,A) for a set S and an attribute A is calculated as the difference between the entropy of the entire set S and the weighted sum of the entropy of each subset of S created by splitting on attribute A.
+
+# %% [markdown] editable=true slideshow={"slide_type": "slide"}
+# $$
+# \Large
+# \text{InformationGain}(S, A) = \text{Entropy}(S) - \sum_{v \in \text{Values}(A)} \frac{|S_v|}{|S|} \text{Entropy}(S_v)
+# $$
+#
+# Where:
+# - Entropy(S) is the entropy of the set S.
+# - Values(A) are the different values that attribute A can take.
+# - Sv​ is the subset of S for which attribute A has value v.
+# - ∣Sv∣ is the size of subset Sv​, and ∣S∣ is the size of the set S.
+#
+# This formula calculates how much "information" is gained by splitting the data on attribute A.
+# The goal in ID3 is to choose the attribute that maximizes this information gain at each step of building the tree
 
 # %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## How / when does the algorithm stop splitting ?
@@ -211,7 +264,7 @@ pd.read_csv("dataset_golf_1.csv")
 # %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ### Implement the entropy function
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 def entropy(target_col: np.ndarray) -> float:
     """
     Calculate the entropy of a dataset.
@@ -235,28 +288,28 @@ def entropy(target_col: np.ndarray) -> float:
 # %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ### Test the entropy function
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 df = pd.read_csv("dataset_golf_1.csv", dtype=str)
 df
 
 # %% [markdown] editable=true slideshow={"slide_type": "subslide"}
 # #### On all labels
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 labels = df.label.values
 print(f"Entropy of subset {labels.tolist()} = {entropy(labels)}")
 
 # %% [markdown] editable=true slideshow={"slide_type": "subslide"}
 # #### On a subset of labels
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 labels = df.label.values[:2]
 print(f"Entropy of subset {labels.tolist()} = {entropy(labels)}")
 
 # %% [markdown] editable=true slideshow={"slide_type": "subslide"}
 # #### On another subset of labels
 
-# %%
+# %% editable=true slideshow={"slide_type": ""}
 labels = df.label.values[:4]
 print(f"Entropy of subset {labels.tolist()} = {entropy(labels)}")
 
@@ -484,11 +537,11 @@ def predict(query: Dict[str, Any], tree: Dict[str, Any], default: Optional[int] 
 query = dataset.iloc[0,:].to_dict()
 query.pop(target_attribute_name)
 
-prediction = predict(query, tree)
+prediction = predict(query, decision_tree)
 print(prediction)
 
 # %% [markdown] jp-MarkdownHeadingCollapsed=true editable=true slideshow={"slide_type": "slide"}
-# ## Other selection criteria
+# ## One example of alternative selection criteria
 # ### Gini Impurity
 #
 # $$
@@ -581,11 +634,6 @@ dot.render('decision_tree2.dot', format='svg')
 #
 # - Statistical sifificance tests
 # - Pruning
-
-# %% [markdown] editable=true slideshow={"slide_type": "skip"}
-# ## Regression [TODO]
-#
-# <img src="figs/arbres_decision_regression_representation_donnees_numeriques.png" width="30%" />
 
 # %% [markdown] editable=true slideshow={"slide_type": "slide"}
 # ## Scikit-Learn implementation
